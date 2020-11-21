@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resource/openFile.jpeg</file>
+        <file>resource/saveFile.jpg</file>
+        <file>resource/saveFile.jpeg</file>
+        <file>resource/help.jpg</file>
+    </qresource>
+</RCC>
