@@ -2,7 +2,7 @@
 /*******************************
  * BMP格式的文件从头到尾以此是
  * bmp文件头     14Byte
- * {
+ * {saveFigureImage
  * bfType       2byte       文件类型
  * bfSize       4byte       文件大小
  * bfReserved1  2byte       保留，必须设置为0
@@ -42,7 +42,8 @@
  *这样可以达到按行的快速存取。这样的话，位图数据的大小就不一定是宽x高x每像素字节数了，因为每行还可能有0填充。
  * RowSize=4*(BPP*width/32) BPP每个像素的比特数，即biBitCount，Width是宽度
  * //填充后的行大小
- * RowSize=4*(8*480/32)=480字节，BPP 8 width 480 是4的倍数无填充
+ * //如果需要填充的话 RowSize=4*(BPP*width/32)
+ *
  * //程序中使用 int bytesPerLine=((bfWidth*biBitCount+31)>>5)<<2;代替，除法更耗时
  * //位图大小
  * int imageSize=bytesPerLine*bfHeight;
@@ -87,7 +88,8 @@ private:
         void GetImageBitCount(uint16_t &bitCount);
         uint8_t GetImageData(uint8_t *pImageDate,uint32_t &imageSize);
         uint8_t DecodeImageInformation(QString filePath);
-        void GetImageinformation(uint32_t &width,uint32_t &hight,uint16_t &bitCount,uint32_t &imageSize,uint32_t &palette_size);
+        void GetImageOffset(uint32_t &offsetByte);
+        void GetImageinformation(uint32_t &width,uint32_t &hight,uint32_t& Compression,uint16_t &bitCount,uint32_t &imageSize,uint32_t &palette_size);
 };
 
 #endif // BMP_H

@@ -17,10 +17,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    mylabel.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    mylabel.h
 DESTDIR = ../decode
 INCLUDEPATH += ../bmp
 LIBS += -L$$DESTDIR -lbmp
@@ -34,5 +36,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     respurce.qrc
 
-FORMS += \
-    mainwindow.ui
+FORMS +=

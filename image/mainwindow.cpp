@@ -1,23 +1,49 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+//#include "ui_mainwindow.h"
 #include <QDebug>
 #include <QFileDialog>
 #include <QRegExp>
+#include <QStatusBar>
+#include <QVector>
 #include "bmp.h"
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    QMainWindow(parent)
+ //   ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+  //  ui->setupUi(this);
+#if 0
+    setWindowTitle(QStringLiteral("鼠标事件"));
+    setWindowIcon(QIcon("icon.png"));
+
+    //显示鼠标当前实时位置
+    statusLabel = new QLabel;
+    statusLabel->setText(QStringLiteral("当前位置:"));
+    statusLabel->setFixedWidth(100);
+
+    //显示鼠标按下或释放时的实时位置
+    MousePosLabel = new QLabel;
+    MousePosLabel->setText(QStringLiteral(""));
+    MousePosLabel->setFixedWidth(100);
+
+    //添加控件
+    statusBar()->addPermanentWidget(statusLabel);
+    statusBar()->addPermanentWidget(MousePosLabel);
+
+    //开启鼠标追踪
+    this->setMouseTracking(true);
+
+    resize(600,400);
+#endif
     createPage();
-
-
-   // this->setFixedSize(800,500);
+    resize(600,400);
+    //鼠标移动的捕捉一层套一层
+    this->setMouseTracking(true);     //开启整个窗口
+    mainWidget->setMouseTracking(true); //开启 mainWidger,其他控件都在这里面
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+   // delete ui;
 }
 
 void MainWindow::createToolBar()
@@ -55,25 +81,41 @@ void MainWindow::createToolBar()
 void MainWindow::createConfigBar()
 {
 
-    spinBoxLayout = new QHBoxLayout;
+   // spinBoxLayout = new QHBoxLayout;
+     spinBoxLayout = new QGridLayout;
     configureLayout = new QVBoxLayout;
     widgetInit<QLabel>(figureLabel,this,"图形");
     widgetInit<QPushButton>(okButton,this,"OK");
     okButton->setMinimumHeight(50);
     widgetInit<>(formatLabel,this,"输出数据类型");
-    widgetInit<>(spinBoxlabel,this,"边长");
+    widgetInit<>(spinBoxlabel,this,"圆心");
+    widgetInit<>(spinBoxlable2,this,"半径");
 
-    figureSpinBox1 = new QSpinBox(this);
-    figureSpinBox1->setMaximum(1000);
-    figureSpinBox1->setValue(0);
 
-    figureSpinBox2 = new QSpinBox(this);
-    figureSpinBox2->setMaximum(1000);
-    figureSpinBox2->setValue(0);
+   SpinBox1 = new QSpinBox(this);
+    SpinBox1->setMaximum(9999);
+    SpinBox1->setValue(0);
+
+   SpinBox2 = new QSpinBox(this);
+    SpinBox2->setMaximum(9999);
+    SpinBox2->setValue(0);
+
+    spinBox3 = new QSpinBox(this);
+    spinBox3->setMaximum(9999);
+    spinBox3->setValue(0);
+    spinBox3->setVisible(true);
+
+    spinBox4 = new QSpinBox(this);
+    spinBox4->setMaximum(9999);
+    spinBox4->setValue(0);
+    spinBox4->setVisible(false);
 
    //两个SpinBox水平布局
-    spinBoxLayout->addWidget(figureSpinBox1);
-    spinBoxLayout->addWidget(figureSpinBox2);
+    spinBoxLayout->addWidget(SpinBox1,0,0,1,1);
+    spinBoxLayout->addWidget(SpinBox2,0,1,1,1);
+    spinBoxLayout->addWidget(spinBoxlable2,1,0,1,1);
+    spinBoxLayout->addWidget(spinBox3,2,0,1,1);
+    spinBoxLayout->addWidget(spinBox4,2,1,1,1);
 
     formatBox = new QComboBox(this);
     formatBox->addItem("C语言数据(*.c)");
@@ -81,11 +123,10 @@ void MainWindow::createConfigBar()
 
     figureBox = new QComboBox(this);
     figureBox->addItem("圆");
-    figureBox->addItem("正方形");
-    figureBox->addItem("长方形");
+    figureBox->addItem("矩形");
 
 
-   // configureLayout->addStretch(1);
+   // configureLayoutimageLabelS->setMouseTracking(true);->addStretch(1);
 
     configureLayout->addWidget(figureLabel);
     configureLayout->addWidget(figureBox);
@@ -101,22 +142,55 @@ void MainWindow::createConfigBar()
     configWidget = new QWidget;
     configWidget->setLayout(configureLayout);
     configWidget->setFixedWidth(150);//固定width 150
+
+    connect(figureBox,SIGNAL(currentIndexChanged(int)),this,SLOT(changedfigure(int)));
+    connect(okButton,SIGNAL(pressed()),this,SLOT(buttonPress()));
+    connect(SpinBox1,SIGNAL(valueChanged(int)),this,SLOT(changedfigure(int)));
+     connect(SpinBox2,SIGNAL(valueChanged(int)),this,SLOT(changedfigure(int)));
+      connect(spinBox3,SIGNAL(valueChanged(int)),this,SLOT(changedfigure(int)));
+       connect(spinBox4,SIGNAL(valueChanged(int)),this,SLOT(changedfigure(int)));
+
 }
 
 void MainWindow::createImageBar()
 {
-    widgetInit<>(imageLabelS,this,"");
-  //  widgetInit<>(imageLabelD,this,"345678");
+    gridLayout0 = new QGridLayout;
+    horizontalSpacer0 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    horizontalSpacer1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    verticalSpacer0 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    verticalSpacer1 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    widgetInit<mylabel>(imageLabelS,this);
+   // imageLabelS->setFixedSize(QSize(240, 240));
+    imageLabelS->setVisible(false);
+  //  imageLabelS->setText("sssssssssssssssss");
     imageLabelS->setFrameStyle(QFrame::Panel|QFrame::Sunken);
     imageLabelS->setAlignment(Qt::AlignCenter);
-    //mageLabelS->setFixedSize(500,500);
-/*
-    QImage images(":/resource/openFile.jpeg");
-    QPixmap pixmap;
-    pixmap.convertFromImage(images);
-    imageLabelS->setPixmap(pixmap);*/
-   // imageLabelD->setFixedSize(500,500);
+    gridLayout0->addItem(horizontalSpacer0,1,0,1,1);
+    gridLayout0->addItem(horizontalSpacer1,1,2,1,1);
+    gridLayout0->addItem(verticalSpacer0,0,2,1,1);
+    gridLayout0->addItem(verticalSpacer1,2,2,1,1);
+    gridLayout0->addWidget(imageLabelS,1,1,1,1);
 
+
+   // imageLayout->addWidget(imageLabelS);
+
+}
+
+void MainWindow::createStatusBar()
+{
+    //显示鼠标当前实时位置
+    statusLabel = new QLabel;
+    statusLabel->setText(QStringLiteral("当前位置:"));
+    statusLabel->setFixedWidth(100);
+
+    //显示鼠标按下或释放时的实时位置
+    MousePosLabel = new QLabel;
+    MousePosLabel->setText(QStringLiteral(""));
+    MousePosLabel->setFixedWidth(100);
+    statusBar = new QStatusBar;
+    //添加控件
+    statusBar->addPermanentWidget(statusLabel);
+    statusBar->addPermanentWidget(MousePosLabel);
 }
 void MainWindow::createPage()
 {
@@ -125,12 +199,15 @@ void MainWindow::createPage()
     createToolBar();
     createConfigBar();
     createImageBar();
+    createStatusBar();
     belowLayout->addWidget(configWidget);
-    belowLayout->addWidget(imageLabelS);
-
-     mainLayout->addLayout(barLayout);
-     mainLayout->addLayout(belowLayout);
-     mainWidget->setLayout(mainLayout);
+    belowLayout->addLayout(gridLayout0);
+//    belowLayout->addWidget(imageLabelS);
+    mainLayout->addLayout(barLayout);
+    mainLayout->addLayout(belowLayout);
+    mainLayout->addWidget(statusBar);
+    mainWidget->setLayout(mainLayout);
+    mainWidget->setMouseTracking(true);
    this->setCentralWidget(mainWidget);
 
 }
@@ -155,7 +232,7 @@ void MainWindow::openFile()
         openfilePath = fileDialog->selectedFiles()[0];
         qDebug() << openfilePath;
         getImageData();
-        testShowinfo();
+        testShowinfo();       
     }
     delete fileDialog;
     // fileDialog->getOpenFileName();
@@ -169,7 +246,14 @@ void MainWindow::displayImage()
     pixmap.convertFromImage(image);
     imageLabelS->setPixmap(pixmap);
 #else
-    imageLabelS->setPixmap(QPixmap::fromImage(image));
+   // imageLabelS->setPixmap(QPixmap::fromImage(image));
+    imageLabelS->setVisible(true);
+    imageLabelS->setImage(image);
+    imageLabelS->resize(image.size());
+    //开启imageLables 的鼠标捕捉
+    imageLabelS->setMouseTracking(true);
+    qDebug() << image.size();
+
 #endif
 }
 
@@ -183,6 +267,7 @@ void MainWindow::saveFile()
      * .* 不能匹配中文
      */
          //读formatBox
+    QString newSaveFilePath;
     QString filePathTmp = formatBox->currentText();
     qDebug() << filePathTmp;
     QRegExp rx1("^(.*)(\\()(\\*)(\\.[a-z]*)(\\))$");
@@ -190,39 +275,130 @@ void MainWindow::saveFile()
     if(match)
     {
         QString saveFileFormat = rx1.cap(4);
-        qDebug() << saveFileFormat;
-
+        qDebug() <<"saveFileFormat"<< saveFileFormat;
 
         QString savefileName = QFileDialog::getSaveFileName(this,"save file",".",saveFileFormat);
         if ( !savefileName.isNull() )
         {
-            qDebug() << savefileName;
+            qDebug() << "savefileName"<<savefileName;
             newSaveFilePath.append(savefileName);
             newSaveFilePath.append(saveFileFormat);
-            qDebug() << newSaveFilePath;
+
+            qDebug() <<"newSaveFilePath" <<newSaveFilePath;
+            saveFigureImage(newSaveFilePath);
         }
     }
+}
+
+void MainWindow::changedSpinBox(int index)
+{
+    if(index == 0)
+    {
+        spinBoxlabel->setText("圆心");
+        spinBoxlable2->setText("半径");
+        spinBox4->setVisible(false);
+    }
+    else if(index == 1)
+    {
+        spinBoxlabel->setText("起点");
+        spinBoxlable2->setText("边长");
+        spinBox4->setVisible(true);
+
+    }
+}
+
+void MainWindow::drawCutFigure()
+{
+   imageLabelS->getCirclePointPos();
+   cutImagePosition.swap(imageLabelS->position);
 }
 
 void MainWindow::getImageData()
 {
     int ret;
+    uint32_t offset;
     imageDecode = new Bmp;
     imageDecode->DecodeImageInformation(openfilePath);
-    imageDecode->GetImageinformation(imageWidth,imageHight,imagebitCount,imageSize,palette_size);
-//    imageDecode->GetImageHW(imageWidth,imageHight);
-//    imageDecode->GetImageBitCount(imagebitCount);
+    imageDecode->GetImageinformation(imageWidth,imageHight,biCompression,imagebitCount,imageSize,palette_size);
+    imageDecode->GetImageOffset(offset);
     if(palette_size != 0)
     {
 
     }
     pimageDate = new uint8_t[imageSize];
    ret = imageDecode->GetImageData(pimageDate,imageSize);
-    qDebug() <<"ret"<< ret;
-
-  //  delete imageDecode;
-  //  imageDecode = nullptr;
 }
+
+void MainWindow::saveFigureImage(QString file)
+{
+    int skip=4-((imageWidth*imagebitCount)>>3)&3;
+    qDebug() << skip;
+    QFile savefile(file);
+    savefile.open(QIODevice::ReadWrite|QIODevice::Text|QIODevice::Truncate);
+    QTextStream out;
+    out.setDevice(&savefile);
+
+    getFigureInportantPoint();
+    testVector();
+
+    int minx,maxx,height;
+    int offset = imagebitCount/8;
+    QVector<QPoint>::iterator it = cutImagePosition.begin();
+
+    out << "uint8_t imageArray[]={" << endl;
+    for (;it!=cutImagePosition.end();){
+        minx = it->x();
+        maxx = (it+1)->x();
+        height = it->y();
+        for (int i=minx;i<=maxx;i++) {
+            for(int j=offset-1;j>=0;j--)
+            {
+              out << "0x" <<hex <<pimageDate[imageSize-((imageWidth*height+i)*offset+j)]<<",";
+            }
+        }
+        out << "// (x,y)(" <<dec<<minx<<","<<height<<")";
+        out << "(" <<dec<<maxx<<","<<height<<")";
+       out << endl;
+        it+=2;
+    }
+    out << "}" << endl;
+
+    out << "uint16_t position["+QString::number(cutImagePosition.count())+"][2] = {"<<endl;
+    for (it=cutImagePosition.begin();it!=cutImagePosition.end();it++) {
+        out<< "{"+QString::number(it->x())+","+QString::number(it->y())+"}," << endl;
+    }
+    out << "}"<< endl;
+}
+
+void MainWindow::getFigureInportantPoint()
+{
+    int tmpy = -1;
+    int maxx;
+    QVector<QPoint>::iterator it = cutImagePosition.begin();
+    QPoint lastPoint = cutImagePosition.last();
+     for(;it!=cutImagePosition.end();)
+     {
+         if(tmpy == -1)
+         {
+               tmpy = it->y();
+               it++;
+               continue;
+         }
+         if(tmpy == it->y())
+         {
+             maxx = it->x();
+             it = cutImagePosition.erase(it);
+         }
+         else if(tmpy != it->y())
+         {
+             it = cutImagePosition.insert(it,QPoint(maxx,tmpy));
+             it+=2;
+              tmpy = it->y();
+         }
+     }
+     it = cutImagePosition.insert(cutImagePosition.end(),lastPoint);
+}
+
 #if 1
 void MainWindow::testShowinfo()
 {
@@ -231,13 +407,58 @@ void MainWindow::testShowinfo()
     qDebug() << "imagebitCount" << imagebitCount;
     qDebug() << "palette_size" <<palette_size;
     qDebug() << "imageSize" << imageSize;
-    for (int i=0;i<10;i++) {
-             qDebug("bfType %x",*(pimageDate+i));
-        }
+}
 
-
+void MainWindow::testVector()
+{
+    QVector<QPoint>::iterator it = cutImagePosition.begin();
+    for (;it!=cutImagePosition.end();it++) {
+        qDebug() <<"position"<<*it;
+    }
 }
 #endif
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    if((event->x()>=imageLabelS->x() && event->x()<= (imageWidth+imageLabelS->x()) )&& \
+      ( event->y()>=imageLabelS->y() && event->y()<= (imageHight+imageLabelS->y())))
+    {
+        QString str = "("+QString::number(event->x()-imageLabelS->x())+","+QString::number(event->y()-imageLabelS->y())+")";
+        if(event->button()==Qt::LeftButton){//左键按下
+            QPoint offset(event->x()-imageLabelS->x(),event->y()-imageLabelS->y());
+         imageLabelS->mousePress(offset,figureBox->currentIndex());
+            statusBar->showMessage(QStringLiteral("左键:")+str);
+        }else if(event->button()==Qt::RightButton){//右键按下
+            statusBar->showMessage(QStringLiteral("右键:")+str);
+        }else if(event->button()==Qt::MidButton){//中间键按下
+            statusBar->showMessage(QStringLiteral("中间键:")+str);
+        }
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    if((event->x()>=imageLabelS->x() && (event->x()<= imageWidth+imageLabelS->x())) && \
+       (event->y()>=imageLabelS->y() && (event->y()<= imageHight+imageLabelS->y())))
+    {
+        MousePosLabel->setText("("+QString::number(event->x()-imageLabelS->x())+","+QString::number(event->y()-imageLabelS->y())+")");
+
+        QPoint offset(event->x()-imageLabelS->x(),event->y()-imageLabelS->y());
+
+        imageLabelS->mouseMove(offset);
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    if((event->x()>=imageLabelS->x() && (event->x()<= imageWidth+imageLabelS->x())) && \
+       (event->y()>=imageLabelS->y() && (event->y()<= imageHight+imageLabelS->y())))
+    {
+         QPoint offset(event->x()-imageLabelS->x(),event->y()-imageLabelS->y());
+         qDebug() << "offset" << offset;
+       imageLabelS->mouseRelease(offset);
+    }
+}
+
 void MainWindow::openFileSlot()
 {
     qDebug() << "openFileSlot";
@@ -249,6 +470,29 @@ void MainWindow::saveFileSlot()
 {
     qDebug() << "saveFileSlot";
     saveFile();
+}
+
+void MainWindow::buttonPress()
+{
+    qDebug() << "buttonPress";
+    drawCutFigure();
+}
+
+void MainWindow::changedfigure(int)
+{
+    qDebug() << "figureSpinBox1"<<SpinBox1->value();
+     qDebug() << "figureSpinBox2"<<SpinBox2->value();
+      qDebug() << "spinBox3"<<spinBox3->value();
+       qDebug() << "spinBox4"<<spinBox4->value();
+       changedSpinBox(figureBox->currentIndex());
+       imageLabelS->mousePress(QPoint(SpinBox1->value(),SpinBox2->value()),figureBox->currentIndex());
+       if(figureBox->currentIndex() == CRICLE)
+       {
+           imageLabelS->mouseRelease(QPoint(SpinBox1->value()+spinBox3->value(),SpinBox2->value()));
+        }
+       else{
+       imageLabelS->mouseRelease(QPoint(SpinBox1->value()+spinBox3->value(),SpinBox2->value()+spinBox4->value()));
+       }
 }
 
 template<typename T>

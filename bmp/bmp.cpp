@@ -102,18 +102,27 @@ uint8_t Bmp::DecodeImageInformation(QString filePath)
     }
 
     file.close();
+    int skip = 4-((biWidth*biHeight*biBitCount/8)+BMP_FILE_HEADER_SIZE+BMP_BITMAP_INFO_HEADER_SIZE+palette_size)%4;
+    biSizeImages -= skip;
     //读取bmp位图数据
  //    bImageData = new uint8_t(biSizeImages);
    //  in.readRawData(reinterpret_cast<char*>(bImageData),biSizeImages);
     // qDebug() << bImageData;
-     return 0;
+    return 0;
 }
 
-void Bmp::GetImageinformation(uint32_t &width, uint32_t &hight, uint16_t &bitCount, uint32_t &imageSize, uint32_t &palette_size)
+void Bmp::GetImageOffset(uint32_t &offsetByte)
+{
+    offsetByte = bfOffBit;
+}
+
+void Bmp::GetImageinformation(uint32_t &width, uint32_t &hight,uint32_t& Compression, uint16_t &bitCount, uint32_t &imageSize, uint32_t &palette_size)
 {
     width = biWidth;
     hight = biHeight;
+    Compression = biCompression;
     bitCount = biBitCount;
+  //  int skip = 4-((biWidth*biHeight*biBitCount/8)+BMP_FILE_HEADER_SIZE+BMP_BITMAP_INFO_HEADER_SIZE+palette_size)%4;
     imageSize = biSizeImages;
     palette_size = this->palette_size;
 }
